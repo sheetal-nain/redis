@@ -1,0 +1,18 @@
+9ba41e6,sheetal,sheetalnain17@gmail.com,4 hours ago,resolved file
+590fdf4,sheetal,sheetalnain17@gmail.com,4 hours ago,changes in ninja
+ ninja/README.md | 2 ++
+ 1 file changed, 2 insertions(+)
+
+434fb85,sheetal,sheetalnain17@gmail.com,4 hours ago,changes in master
+ ninja/README.md | 2 ++
+ 1 file changed, 2 insertions(+)
+
+d055027,sheetal,sheetalnain17@gmail.com,4 hours ago,changes commited to ninja branch
+ repo1 | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+38f30d5,sheetal,sheetalnain17@gmail.com,4 hours ago,first folder
+ README.md       | 1 +
+ ninja/README.md | 1 +
+ repo1           | 1 +
+ 3 files changed, 3 insertions(+)

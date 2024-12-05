@@ -1,0 +1,11 @@
+<VirtualHost *:80>
+    ServerName {{ website_domain }}
+
+    # Proxy settings
+    ProxyPreserveHost On
+    ProxyPass / http://{{ nginx_server_ip }}/
+    ProxyPassReverse / http://{{ nginx_server_ip }}/
+
+    # Optional: Set headers if needed
+    Header always set X-Proxy-By "Apache"
+</VirtualHost>

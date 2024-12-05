@@ -1,0 +1,15 @@
+server {
+    listen 0.0.0.0:80;
+    server_name {{ website_domain }};
+
+    # Dynamically set root directory for the active site
+    include /etc/nginx/conf.d/active_site_root.conf;
+
+    location / {
+        index index.html;
+    }
+
+    # Log files for access and errors
+    error_log /var/log/nginx/rotating_site_error.log;
+    access_log /var/log/nginx/rotating_site_access.log;
+}

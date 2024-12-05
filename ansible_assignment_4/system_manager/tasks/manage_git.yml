@@ -1,0 +1,9 @@
+# tasks/manage_git.yml
+---
+- name: Clone or update Git repositories
+  git:
+    repo: "{{ item.repo }}"
+    dest: "{{ item.dest }}"
+    update: yes
+  loop: "{{ git_repositories }}"
+

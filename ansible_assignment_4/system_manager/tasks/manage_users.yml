@@ -1,0 +1,10 @@
+# tasks/manage_users.yml
+---
+- name: Manage users
+  user:
+    name: "{{ item.name }}"
+    state: "{{ item.state }}"
+    groups: "{{ item.groups | default(omit) }}"
+    shell: "{{ item.shell | default(omit) }}"
+  loop: "{{ users }}"
+

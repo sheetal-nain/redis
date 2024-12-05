@@ -1,0 +1,123 @@
+---
+- name: nginx server
+  hosts: localhost
+  become: yes
+
+  vars:
+    nginx_server_ip: "3.6.126.125"
+    website_domain: "Arrow.opstree.com"
+    users:
+      - Sheetal
+      - Ramratan
+      - Anirudh
+    rotation_time: "* * * * *"  
+
+  tasks:
+
+    - name: Install Nginx
+      apt:
+        name: nginx
+        state: present
+        update_cache: yes
+
+    - name: Configure log rotation for Nginx
+      copy:
+        dest: /etc/logrotate.d/nginx
+        content: |
+          /var/log/nginx/*.log {
+              daily
+              size 1G
+              rotate 5
+              missingok
+              compress
+              delaycompress
+              notifempty
+              create 640 root adm
+              sharedscripts
+              postrotate
+                  [ -s /run/nginx.pid ] && kill -USR1 `cat /run/nginx.pid`
+              endscript
+          }
+
+    - name: Create website directories
+      file:
+        path: "/var/www/{{ item }}"
+        state: directory
+        mode: '0755'
+      with_items: "{{ users }}"
+
+    - name: Create HTML page for each user
+      copy:
+        dest: "/var/www/{{ item }}/index.html"
+        content: "<html><head><title>{{ item }}'s Website</title></head><body><h1>Welcome to {{ item }}'s Website!</h1></body></html>"
+      with_items: "{{ users }}"
+
+    - name: Nginx configuration for rotating websites
+      template:
+        src: nginx_template.j2
+        dest: /etc/nginx/sites-available/rotating_site
+      notify: restart nginx
+
+    - name: Enable site configuration
+      file:
+        src: /etc/nginx/sites-available/rotating_site
+        dest: /etc/nginx/sites-enabled/rotating_site
+        state: link
+
+    - name: Create rotation script
+      copy:
+        dest: /usr/local/bin/rotate_website.sh
+        mode: '0755'
+        content: |
+          #!/bin/bash
+          users=(Sheetal Ramratan Anirudh)
+          current_user_index=$(date +%M | awk '{print $1 % 3}') 
+          current_user="${users[$current_user_index]}"
+          echo "root /var/www/$current_user;" > /etc/nginx/conf.d/active_site_root.conf
+          systemctl reload nginx
+
+    - name: Set up cron job
+      cron:
+        name: "Rotate websites every minute"
+        user: root
+        job: "sudo /usr/local/bin/rotate_website.sh"
+        minute: "*"
+
+    - name: Allow Nginx traffic through the firewall
+      ufw:
+        rule: allow
+        name: "Nginx Full"
+         
+    - name: Install Apache
+      apt:
+        name: apache2
+        state: present
+        update_cache: yes
+
+    - name: Enable necessary Apache modules
+      apache2_module:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - proxy
+        - proxy_http
+        - headers
+        - ssl
+
+    - name: Configure Apache as a reverse proxy
+      template:
+        dest: "/etc/apache2/sites-available/{{ website_domain }}.conf"
+        src: apache_template.j2
+      
+
+    - name: Enable site configuration
+      file:
+        src: "/etc/apache2/sites-available/{{ website_domain }}.conf"
+        dest: "/etc/apache2/sites-enabled/{{ website_domain }}.conf"
+        state: link
+
+  handlers:
+    - name: restart nginx
+      service:
+        name: nginx
+        state: restarted

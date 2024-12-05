@@ -1,0 +1,46 @@
+#!/bin/bash
+set -x
+# File where data is stored.
+
+DATA_FILE="/home/sheetal/.ssh/config"
+	
+
+# Check if the provided options are correct.
+
+while getopts ":an:h:u:p:i:" opt; do
+	case $opt in
+		a) action="add";;
+		n) server_name="$OPTARG";;
+		h) host_ip="$OPTARG";;
+		u) username="$OPTARG";;
+		p) port="$OPTARG";;
+        	i) key="$OPTARG";;
+		:) echo "Option -$OPTARG requires an argument";;
+	esac
+done
+
+
+# Function to add ssh connection.
+
+add() {
+	 cat /home/sheetal/.ssh/config | grep ${server_name} >/dev/null 2>&1
+	 if [ $? -eq 0 ]; then
+	    echo "connection exists"
+else
+	echo "$server_name $host_ip $username $port $key " >> "$DATA_FILE"
+       echo "Added: $server_name $host_ip $username $port $key to $DATA_FILE"
+
+           fi
+}
+
+add 
+
+# Delete the connection.
+
+del() {
+	rm "$server_name"
+}
+
+del
+
+

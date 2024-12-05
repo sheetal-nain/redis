@@ -1,0 +1,7 @@
+# s_m_playbook.yml
+---
+- hosts: localhost
+  become: yes
+  roles:
+    - system_manager
+

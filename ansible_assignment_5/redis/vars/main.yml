@@ -1,0 +1,5 @@
+---
+
+upgrade_redis: false
+redis_runtime_directory: redis
+

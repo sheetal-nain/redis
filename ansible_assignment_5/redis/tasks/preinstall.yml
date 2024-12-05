@@ -1,0 +1,15 @@
+---
+- name: Ensure build tools are installed on the system (Debian)
+  apt:
+    name: "build-essential"
+    state: present
+    update_cache: yes
+  become: yes
+  when: ansible_os_family == "Debian"
+
+- name: Ensure build tools are installed on the system (RedHat)
+  yum:
+    name: "make"
+    state: present
+  become: yes
+  when: ansible_os_family == "RedHat"

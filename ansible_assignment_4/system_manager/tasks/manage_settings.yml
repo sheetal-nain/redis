@@ -1,0 +1,6 @@
+# tasks/manage_settings.yml
+---
+- name: Set system timezone
+  timezone:
+    name: "{{ system_settings.timezone }}"
+

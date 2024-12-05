@@ -1,0 +1,151 @@
+---
+- name: Setup Spring3HibernateApp
+  hosts: localhost
+  become: true
+  gather_facts: no
+  vars:
+    tomcat_user: "tomcat"
+    tomcat_group: "tomcat"
+    java_version: "11"
+    app_war_name: "Spring3HibernateApp.war"
+    ansible_os_family: "Debian"
+  
+
+
+  tasks:
+    - name: Install necessary packages
+      apt:
+        name:
+          - default-jdk
+          - maven
+          - mysql-server
+          - openjdk-11-jdk
+          - git
+        state: present
+      when: ansible_os_family == "Debian"
+
+    - name: Start MySQL service
+      service:
+        name: mysql
+        state: started
+
+    - name: Clone Spring3HibernateApp repository
+      git:
+        repo: 'https://github.com/opstree/spring3hibernate'
+        dest: '/opt/Spring3HibernateApp'
+
+    - name: Build WAR file using Maven
+      command: sudo mvn clean package
+      args:
+        chdir: '/opt/Spring3HibernateApp'
+      register: mvn_output 
+
+    - name: create tomcat group
+      group:
+        name: "{{ tomcat_group }}"
+
+    - name: create tomcat user
+      user:
+        name: "{{ tomcat_user }}"
+          #   shell: /bin/false
+        group: "{{ tomcat_group }}"
+        state: present
+
+    - name: Download Tomcat
+      get_url:
+        url: "https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.96/bin/apache-tomcat-9.0.96.tar.gz"
+        dest: "/tmp/apache-tomcat-9.0.96.tar.gz"
+
+    - name: Create a directory for tomcat.
+      file:
+        path: /usr/share
+        state: directory
+        mode: '0755'
+
+    - name: Extract tomcat
+      unarchive:
+        src: "/tmp/apache-tomcat-9.0.96.tar.gz"
+        dest: /usr/share/
+        remote_src: yes
+
+    - name: change ownership of the tomcat directory.
+      file:
+        path: /usr/share/apache-tomcat-9.0.96
+        owner: "{{ tomcat_user }}"
+        group: "{{ tomcat_group }}"
+        recurse: yes
+        state: directory
+
+    - name: change permissions of the bin directory
+      file:
+        path: /usr/share/apache-tomcat-9.0.96/bin
+        mode: u+x
+        recurse: yes
+
+    - name: Add roles and users to tomcat-users.xml
+      blockinfile:
+        dest: /usr/share/apache-tomcat-9.0.96/conf/tomcat-users.xml
+        content: |
+          <role rolename="manager-gui"/>
+          <role rolename="manager-script"/>
+          <role rolename="manager-admin"/>
+          <user username="admin" password="admin" roles="manager-gui,manager-script,manager-admin"/>
+        insertbefore: '</tomcat-users>'
+
+    - name: configure context.xml
+      replace:
+        path: /usr/share/apache-tomcat-9.0.96/webapps/manager/META-INF/context.xml
+        regexp: '  <Valve className="org\.apache\.catalina\.valves\.RemoteAddrValve"'
+        replace: ''
+
+    - name: Remove second line 'allow="127...' from context.xml
+      replace:
+        path: /usr/share/apache-tomcat-9.0.96/webapps/manager/META-INF/context.xml
+        regexp: '         allow="127\\\.\\d\+\\\.\\d\+\\\.\\d\+\|::1\|0:0:0:0:0:0:0:1" />'
+        replace: ''
+
+    - name: update service file for tomcat
+      copy:
+        dest: /etc/systemd/system/tomcat.service
+        content: |
+          [Unit]
+          Description=Tomcat
+          After=network.target
+
+          [Service]
+          Type=forking
+
+          User=tomcat
+          Group=tomcat
+
+          Environment="JAVA_HOME=/usr/lib/jvm/java-1.11.0-openjdk-amd64"
+          Environment="JAVA_OPTS=-Djava.security.egd=file:///dev/urandom"
+          Environment="CATALINA_BASE=/usr/share/apache-tomcat-9.0.96"
+          Environment="CATALINA_HOME=/usr/share/apache-tomcat-9.0.96"
+          Environment="CATALINA_PID=/usr/share/apache-tomcat-9.0.96/temp/tomcat.pid"
+          Environment="CATALINA_OPTS=-Xms512M -Xmx1024M -server -XX:+UseParallelGC"
+
+          ExecStart=/usr/share/apache-tomcat-9.0.96/bin/startup.sh
+          ExecStop=/usr/share/apache-tomcat-9.0.96/bin/shutdown.sh
+
+          RestartSec=10
+          Restart=always
+
+          [Install]
+          WantedBy=multi-user.target
+      notify: restart tomcat
+
+    - name: Deploy WAR file to tomcat
+      copy:
+        src: "/opt/Spring3HibernateApp/target/{{ app_war_name }}"
+        dest : "/usr/share/apache-tomcat-9.0.96/webapps/{{ app_war_name }}"
+        owner: "{{ tomcat_user }}"
+        group: "{{ tomcat_group }}"
+        remote_src: yes
+      notify: restart tomcat
+
+  handlers:
+    - name: restart tomcat
+      service:
+        name: tomcat
+        state: restarted 

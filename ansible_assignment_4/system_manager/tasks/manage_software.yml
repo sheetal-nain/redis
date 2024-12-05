@@ -1,0 +1,9 @@
+# tasks/manage_software.yml
+---
+- name: Install software packages
+  apt:
+    name: "{{ item }}"
+    state: present
+  loop: "{{ software_packages }}"
+  when: ansible_os_family == "Debian"
+

@@ -1,0 +1,28 @@
+---
+# defaults file for system_manager
+# defaults/main.yml
+software_packages:
+  - git
+  - vim
+
+users:
+  - name: Tom
+    state: present
+    groups: sudo
+    shell: /bin/bash
+
+  - name: Tom
+    state: absent
+
+git_repositories:
+  - repo: https://github.com/opstree/spring3hibernate
+    dest: /opt/repo
+
+directories:
+  - /var/www
+  - /opt/app
+  - /tmp/logs
+
+system_settings:
+  timezone: "UTC"
+
