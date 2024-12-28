@@ -250,7 +250,7 @@ resource "aws_route" "tool_to_default_private" {
 ################### Default VPC Route Table Update ###################
 
 data "aws_route_table" "default" {
-  vpc_id = aws_vpc.default.id
+  vpc_id = data.aws_vpc.default.id
 }
 
 resource "aws_route" "default_to_tool" {
