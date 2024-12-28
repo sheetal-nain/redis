@@ -1,7 +1,22 @@
----
-- name: Ensuring redis server is installed on the system
-  include_tasks: install.yml
-
-- name: Ensuring redis configuration is up to date
-  include_tasks: configure.yml
-  
+    - name: Update apt package list
+      apt:
+        update_cache: yes
+    - name: Install Redis and dependencies
+      apt:
+        name:
+          - redis-server
+          - build-essential
+          - tcl
+        state: present
+    - name: Ensure Redis service is enabled and started
+      service:
+        name: redis-server
+        state: started
+        enabled: yes
+    - name: Verify Redis installation
+      command: redis-cli --version
+      register: redis_version
+      changed_when: false
+    - name: Print Redis version
+      debug:
+        msg: "Redis installed successfully. Version: {{ redis_version.stdout }}"
