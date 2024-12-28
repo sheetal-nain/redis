@@ -20,7 +20,11 @@
   package:
     name: make
     state: present
-
+- name: Ensure jemalloc development package is installed
+  package:
+    name: libjemalloc-dev  # Adjust this based on your OS (e.g., jemalloc-devel for RHEL/CentOS)
+    state: present
+    
 - name: Ensure pkg-config is installed
   package:
     name: pkg-config
