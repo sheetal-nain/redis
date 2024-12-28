@@ -159,7 +159,6 @@ resource "aws_instance" "Public_server" {
     subnet_id = aws_subnet.public_subnet[0].id
     instance_type = "t3.micro"
     key_name = "ninja"
-    user_data = file("shell.sh")
     security_groups = [aws_security_group.redis_sg.id]
     
 tags = {
