@@ -16,6 +16,12 @@
     not redis_status.stat.exists or
     upgrade_redis
 
+- name: Ensure make is installed
+  package:
+    name: make
+    state: present
+  become: yes
+  
 - name: Ensure the build time dependencies are met
   make:
     chdir: "/tmp/redis-{{ redis_version }}"
