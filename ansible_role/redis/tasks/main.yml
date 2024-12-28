@@ -1,11 +1,8 @@
-    - name: Update apt package list
+    - name: Update apt package index
       apt:
         update_cache: yes
-        
-    - name: Ensure Python `six` module is installed
-      command: sudo apt install python3-six
 
-    - name: Install Redis and dependencies
+    - name: Install Redis server and dependencies
       apt:
         name:
           - redis-server
@@ -13,17 +10,36 @@
           - tcl
         state: present
 
-    - name: Ensure Redis service is enabled and started
-      service:
-        name: redis-server
-        state: started
-        enabled: yes
+    - name: Install Python 3 pip
+      apt:
+        name: python3-pip
+        state: present
 
-    - name: Verify Redis installation
-      command: redis-cli --version
-      register: redis_version
+    - name: Install Python Redis client
+      pip:
+        name: redis
+        state: present
+        executable: pip3
+
+    - name: Ensure Redis service is enabled and started
+      systemd:
+        name: redis-server
+        enabled: yes
+        state: started
+
+    - name: Configure Redis to run as a background service
+      lineinfile:
+        path: /etc/redis/redis.conf
+        regexp: '^#daemonize no'
+        line: 'daemonize yes'
+        backup: yes
+
+    - name: Test Redis is running (ping)
+      command: redis-cli ping
+      register: redis_ping
+      failed_when: redis_ping.stdout != 'PONG'
       changed_when: false
 
-    - name: Print Redis version
+    - name: Show Redis ping response
       debug:
-        msg: "Redis installed successfully. Version: {{ redis_version.stdout }}"
+        msg: "Redis responded with: {{ redis_ping.stdout }}"
