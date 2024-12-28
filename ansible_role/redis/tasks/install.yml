@@ -1,4 +1,7 @@
 ---
+- name: cache update
+  command: sudo apt update
+  
 - name: Ensure if redis is previously installed or not
   stat:
     path: "/usr/local/bin/redis-server"
