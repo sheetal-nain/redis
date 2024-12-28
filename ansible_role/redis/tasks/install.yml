@@ -1,7 +1,7 @@
 ---
 - name: cache update
   command: sudo apt update
-  
+
 - name: Ensure if redis is previously installed or not
   stat:
     path: "/usr/local/bin/redis-server"
@@ -16,30 +16,26 @@
     not redis_status.stat.exists or
     upgrade_redis
 
-- name: Ensure make and build dependencies are installed
-  hosts: all
-  become: yes
-  tasks:
-    - name: Ensure make is installed
-      package:
-        name: make
-        state: present
+- name: Ensure make is installed
+  package:
+    name: make
+    state: present
 
-    - name: Ensure pkg-config is installed
-      package:
-        name: pkg-config
-        state: present
+- name: Ensure pkg-config is installed
+  package:
+    name: pkg-config
+    state: present
 
-    - name: Ensure build-essential (gcc and other required tools) is installed
-      package:
-        name: build-essential
-        state: present
+- name: Ensure build-essential (gcc and other required tools) is installed
+  package:
+    name: build-essential
+    state: present
 
-    - name: Ensure tcl (for Redis testing) is installed
-      package:
-        name: tcl
-        state: present
-        
+- name: Ensure tcl (for Redis testing) is installed
+  package:
+    name: tcl
+    state: present
+
 - name: Ensure the build time dependencies are met
   make:
     chdir: "/tmp/redis-{{ redis_version }}"
@@ -84,4 +80,3 @@
     system: yes
     state: present
   become: yes
-
