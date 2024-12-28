@@ -255,7 +255,7 @@ data "aws_route_table" "default" {
 
 resource "aws_route" "default_to_tool" {
   route_table_id            = data.aws_route_table.default.id
-  destination_cidr_block    = aws_vpc.Redis.cidr_block
+  destination_cidr_block    = aws_vpc.VPC.cidr_block
   vpc_peering_connection_id = aws_vpc_peering_connection.Redis_to_default.id
 }
 
