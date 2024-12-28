@@ -1,11 +1,1 @@
----
-# defaults file for redis
-redis_version: "{{ version }}" 
-redis_port: 6379
-
-redis_conf_file_location: /etc/redis
-redis_data_dir: /opt/redis/data
-redis_log_dir: /var/log/redis
-redis_logfile: "/var/log/redis/redis.log"
-redis_runtime_directory: redis
 
