@@ -43,6 +43,8 @@
 - name: Ensure the build time dependencies are met
   make:
     chdir: "/tmp/redis-{{ redis_version }}"
+  environment:
+    BUILD_JEMALLOC: "yes"
   when: >
     not redis_status.stat.exists or
     upgrade_redis
