@@ -1,65 +1,80 @@
 ---
-    - name: Update apt package index
-      ansible.builtin.apt:
-        update_cache: yes
+- name: Update apt package index
+  ansible.builtin.apt:
+    update_cache: yes
 
-    - name: Install Redis server and dependencies
-      ansible.builtin.apt:
-        name:
-          - redis-server
-          - build-essential
-          - tcl
-        state: present
+- name: Install Redis server and dependencies
+  ansible.builtin.apt:
+    name:
+      - redis-server
+      - build-essential
+      - tcl
+    state: present
 
-    - name: Install Python 3 pip
-      ansible.builtin.apt:
-        name: python3-pip
-        state: present
+- name: Install Python 3 pip
+  ansible.builtin.apt:
+    name: python3-pip
+    state: present
 
-    - name: Install Python Redis client
-      pip:
-        name: redis
-        state: present
-        executable: pip3
+- name: Install Python 3 venv package
+  ansible.builtin.apt:
+    name: python3-venv
+    state: present
 
-    - name: Install 'six' Python package
-      pip:
-        name: six
-        state: present
-        executable: pip3
+- name: Create a virtual environment for Redis Python client
+  ansible.builtin.command:
+    cmd: python3 -m venv /opt/redis-venv
+    creates: /opt/redis-venv
 
-    - name: Ensure Redis service is enabled and started
-      systemd:
-        name: redis-server
-        enabled: yes
-        state: started
+- name: Install pip in the virtual environment
+  ansible.builtin.command:
+    cmd: /opt/redis-venv/bin/python -m ensurepip --upgrade
+  when: ansible_facts['distribution'] == 'Ubuntu'
 
-    - name: Configure Redis to run as a background service
-      lineinfile:
-        path: /etc/redis/redis.conf
-        regexp: '^#daemonize no'
-        line: 'daemonize yes'
-        backup: yes
+- name: Install Python Redis client in the virtual environment
+  ansible.builtin.pip:
+    name: redis
+    executable: /opt/redis-venv/bin/pip
+    state: present
 
-    - name: Restart Redis service to apply changes
-      systemd:
-        name: redis-server
-        state: restarted
+- name: Install 'six' Python package in the virtual environment
+  ansible.builtin.pip:
+    name: six
+    executable: /opt/redis-venv/bin/pip
+    state: present
 
-    - name: Wait for Redis to be ready
-      wait_for:
-        host: localhost
-        port: 6379
-        state: started
-        delay: 10
-        timeout: 60
+- name: Ensure Redis service is enabled and started
+  systemd:
+    name: redis-server
+    enabled: yes
+    state: started
 
-    - name: Test Redis is running (ping)
-      command: redis-cli ping
-      register: redis_ping
-      failed_when: redis_ping.stdout != 'PONG'
-      changed_when: false
+- name: Configure Redis to run as a background service
+  lineinfile:
+    path: /etc/redis/redis.conf
+    regexp: '^#daemonize no'
+    line: 'daemonize yes'
+    backup: yes
 
-    - name: Show Redis ping response
-      debug:
-        msg: "Redis responded with: {{ redis_ping.stdout }}"
+- name: Restart Redis service to apply changes
+  systemd:
+    name: redis-server
+    state: restarted
+
+- name: Wait for Redis to be ready
+  wait_for:
+    host: localhost
+    port: 6379
+    state: started
+    delay: 10
+    timeout: 60
+
+- name: Test Redis is running (ping)
+  command: redis-cli ping
+  register: redis_ping
+  failed_when: redis_ping.stdout != 'PONG'
+  changed_when: false
+
+- name: Show Redis ping response
+  debug:
+    msg: "Redis responded with: {{ redis_ping.stdout }}"
