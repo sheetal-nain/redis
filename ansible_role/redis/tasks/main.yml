@@ -3,10 +3,7 @@
         update_cache: yes
         
     - name: Ensure Python `six` module is installed
-      pip:
-        name: six
-        state: present
-        executable: /usr/bin/pip3
+      command: sudo apt install python3-six
 
     - name: Install Redis and dependencies
       apt:
