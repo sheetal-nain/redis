@@ -1,4 +1,5 @@
 ---
+plugin: community.vmware.vmware_vm_inventory
 plugin: amazon.aws.aws_ec2
 regions:
   - ap-south-1
