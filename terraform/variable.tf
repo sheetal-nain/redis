@@ -21,6 +21,9 @@ variable "Database_server" {
  description = "Database servers"
  default     = [ "Database_server_1", "Database_server_2", "Database_server_3" ]
 }
+variable "region_name" {
+  default = "ap-south-1"
+}
 
 variable "default_vpc_cidr" {
   type = string
