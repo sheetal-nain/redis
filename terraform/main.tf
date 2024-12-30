@@ -18,7 +18,7 @@ module "subnet" {
 }
 
 module "security_groups" {
-  source   = "./security-group"
+  source   = "./security_group"
   vpc_id   = module.vpc.vpc_id
   vpc_cidr = module.vpc.vpc_cidr
 }
@@ -34,7 +34,7 @@ module "instance" {
 }
 
 module "peering" {
-  source   = "./vpc-peering"
+  source   = "./vpc_peering"
   vpc_id   = module.vpc.vpc_id
   vpc_cidr = module.vpc.vpc_cidr
 }
