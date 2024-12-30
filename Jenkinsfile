@@ -27,7 +27,7 @@ pipeline {
             steps {
                 dir('terraform') {
                     sh '''
-                        terraform init \
+                        terraform init -migrate-state  \
                         -backend-config="bucket=terraform-bucket-a" \
                         -backend-config="key=terraform/state" \
                         -backend-config="region=${REGION}" 
