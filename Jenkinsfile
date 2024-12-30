@@ -20,15 +20,15 @@ pipeline {
 
         stage('Plan') {
             steps {
-                sh 'pwd;cd Terraform/ ; terraform init'
-                sh 'pwd;cd Terraform/ ; terraform validate'
-                sh 'pwd;cd Terraform/ ; terraform plan'
+                sh 'pwd;cd terraform/ ; terraform init'
+                sh 'pwd;cd terraform/ ; terraform validate'
+                sh 'pwd;cd terraform/ ; terraform plan'
             }
         }
       
         stage('Apply/Destroy') {
             steps {
-                sh 'pwd;cd Terraform/ ; terraform ${action} --auto-approve'
+                sh 'pwd;cd terraform/ ; terraform ${action} --auto-approve'
             }
         }
     }
