@@ -22,4 +22,9 @@ variable "Database_server" {
  default     = [ "Database_server_1", "Database_server_2", "Database_server_3" ]
 }
 
+variable "default_vpc_cidr" {
+  type = string
+  default = "172.31.0.0/16"
+}
+
 
