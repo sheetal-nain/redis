@@ -215,50 +215,46 @@ terraform {
     encrypt = true
   }
 }
-data "aws_vpc" "default" {
+
+
+data "aws_vpc" "default_vpc" {
+  default = true
+}
+
+resource "aws_vpc_peering_connection" "vpc_peering" {
+  vpc_id        = aws_vpc.VPC.id               
+  peer_vpc_id   = var.vpc_id                  
+  peer_region   = var.region_name               
+  tags = {
+    Name = "peering connection"
+  }
+}
+
+resource "aws_vpc_peering_connection_accepter" "accepter" {
+  vpc_peering_connection_id = aws_vpc_peering_connection.vpc_peering.id
+  auto_accept               = true
+}
+
+data "aws_route_table" "default_RT" {
+  vpc_id = aws_vpc.VPC.id                         
   filter {
-    name   = "isDefault"
+    name   = "association.main"
     values = ["true"]
   }
 }
 
-################### VPC Peering Connection ###################
+resource "aws_route" "default_rt" {
+  route_table_id         = data.aws_route_table.default_RT.id
+  destination_cidr_block = var.vpc_cidr
+  vpc_peering_connection_id = aws_vpc_peering_connection.vpc_peering.id
+}
 
-resource "aws_vpc_peering_connection" "Redis_to_default" {
-  vpc_id        = aws_vpc.VPC.id
-  peer_vpc_id   = data.aws_vpc.default.id
-  auto_accept   = true
-
-  tags = {
-    Name = "Redis-to-default-peering"
+data "aws_security_group" "default_sg" {
+  vpc_id = aws_vpc.VPC.id                          
+  filter {
+    name   = "group-name"
+    values = ["default"]
   }
 }
-
-################### Routes for Tool VPC ###################
-
-resource "aws_route" "tool_to_default_public" {
-  route_table_id            = aws_route_table.Public_rt.id
-  destination_cidr_block    = data.aws_vpc.default.cidr_block
-  vpc_peering_connection_id = aws_vpc_peering_connection.Redis_to_default.id
-}
-
-resource "aws_route" "tool_to_default_private" {
-  route_table_id            = aws_route_table.Database_rt.id
-  destination_cidr_block    = data.aws_vpc.default.cidr_block
-  vpc_peering_connection_id = aws_vpc_peering_connection.Redis_to_default.id
-}
-
-################### Default VPC Route Table Update ###################
-
-data "aws_route_table" "default" {
-  vpc_id = data.aws_vpc.default.id
-}
-
-resource "aws_route" "default_to_tool" {
-  route_table_id            = data.aws_route_table.default.id
-  destination_cidr_block    = aws_vpc.VPC.cidr_block
-  vpc_peering_connection_id = aws_vpc_peering_connection.Redis_to_default.id
-}
-
 
 
