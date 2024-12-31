@@ -4,9 +4,9 @@ regions:
    - ap-south-1
 filters:
   tag:Name:
-    - "Redis-private-1"
-    - "Redis-private-2"
-    - "Redis-private-3"
+    - "redis-private-1"
+    - "redis-private-2"
+    - "redis-private-3"
 compose:
   # ansible_host: public_ip_address  # For public instances
    ansible_host: private_ip_address  # Uncomment if using private instances
