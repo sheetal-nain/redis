@@ -1,5 +1,4 @@
 pipeline {
-
     parameters {
         booleanParam(name: 'autoApprove', defaultValue: false, description: 'Automatically run apply after generating plan?')
         choice(name: 'action', choices: ['apply', 'destroy'], description: 'Select the action to perform')
@@ -10,8 +9,9 @@ pipeline {
         AWS_DEFAULT_REGION = 'ap-south-1'
     }
 
-   agent  any
-        stages {
+    agent any
+
+    stages {
         stage('Clone Repository') {
             steps {
                 git url: 'https://github.com/sheetal-nain/redis.git', branch: 'main'
@@ -25,12 +25,27 @@ pipeline {
                 sh 'pwd;cd terraform/ ; terraform plan'
             }
         }
-      
+
         stage('Apply/Destroy') {
             steps {
                 sh 'pwd;cd terraform/ ; terraform ${action} --auto-approve'
             }
         }
-    }
 
+        // New stage to run the Ansible playbook after Apply
+        stage('Run Ansible Playbook') {
+            when {
+                expression {
+                    return params.action == 'apply'  // Run only if the action is 'apply'
+                }
+            }
+            steps {
+                script {
+                    // Ensure that the Ansible playbook is executed only if terraform apply was successful
+                    echo "Running Ansible Playbook..."
+                    sh 'ansible-playbook -i aws_ec2.yaml playbook.yml'  // Playbook name
+                }
+            }
+        }
+    }
 }
