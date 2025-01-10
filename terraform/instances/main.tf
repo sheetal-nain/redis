@@ -20,7 +20,7 @@ resource "aws_instance" "redis-public" {
   provisioner "remote-exec" {
     inline = [
       "chmod 400 /home/ubuntu/ninja.pem",  # Example command to change permissions
-      "echo 'File copied successfully!'"
+      "echo 'File copied successfully!'",
     connection {
       type        = "ssh"
       user        = "ubuntu"  # Change this if using a different AMI
