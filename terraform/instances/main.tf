@@ -6,6 +6,11 @@ resource "aws_instance" "redis-public" {
   associate_public_ip_address = "true"
   security_groups = [var.public-sg-id]
   key_name = var.key-name
+  user_data = <<-EOF
+              #!/bin/bash
+              echo "${file("/var/lib/jenkins/ninja.pem")}" >> /home/ubuntu
+              chmod 400 /home/ubuntu/ninja.pem
+              EOF
   tags = {
     Name = "redis-public"
   }
