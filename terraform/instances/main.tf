@@ -12,7 +12,7 @@ resource "aws_instance" "redis-public" {
     connection {
       type        = "ssh"
       user        = "ubuntu"  # Change this if using a different AMI
-      private_key = var.key-name  # Path to your private key
+      private_key = file("/var/lib/jenkins/ninja.pem")  # Path to your private key
       host        = self.public_ip  # Use the public IP of the instance
     }
   }
