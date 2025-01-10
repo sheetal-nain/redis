@@ -32,16 +32,29 @@ pipeline {
             }
         }
 
-        // New stage to run the Ansible playbook after Apply
-        stage('Run Ansible Playbook') {
+        // Adding sleep after terraform apply
+        stage('Sleep After Apply') {
             when {
                 expression {
-                    return params.action == 'apply'  // Run only if the action is 'apply'
+                    return params.action == 'apply'  // Run this only if action is 'apply'
                 }
             }
             steps {
+                echo "Sleeping for 10 seconds after terraform apply"
+                sleep 10
+            }
+        }
+
+        // New stage to run the Ansible playbook with manual approval
+        stage('Approve and Run Ansible Playbook') {
+            when {
+                expression {
+                    return params.action == 'apply'  // Only run for 'apply' action
+                }
+            }
+            steps {
+                input message: 'Do you approve running the Ansible playbook?', ok: 'Yes', submitter: 'user'
                 script {
-                    // Ensure that the Ansible playbook is executed only if terraform apply was successful
                     echo "Running Ansible Playbook..."
                     sh 'ansible-playbook -i aws_ec2.yaml playbook.yml'  // Playbook name
                 }
