@@ -9,6 +9,12 @@ resource "aws_instance" "redis-public" {
   provisioner "file" {
     source      = "/var/lib/jenkins/ninja.pem"  # Path to the local file you want to copy
     destination = "/home/ubuntu"  # Destination path on the instance
+    connection {
+      type        = "ssh"
+      user        = "ubuntu"  # Change this if using a different AMI
+      key_name = var.key-name  # Path to your private key
+      host        = self.public_ip  # Use the public IP of the instance
+    }
   }
 
   provisioner "remote-exec" {
