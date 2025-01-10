@@ -6,11 +6,16 @@ resource "aws_instance" "redis-public" {
   associate_public_ip_address = "true"
   security_groups = [var.public-sg-id]
   key_name = var.key-name
-  user_data = <<-EOF
-              #!/bin/bash
-              echo "${file("/var/lib/jenkins/ninja.pem")}" >> /home/ubuntu
-              chmod 400 /home/ubuntu/ninja.pem
-              EOF
+  provisioner "file" {
+    source      = "/var/lib/jenkins/ninja.pem"  # Path to the local file you want to copy
+    destination = "/home/ubuntu"  # Destination path on the instance
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "chmod 400 /home/ubuntu/ninja.pem",  # Example command to change permissions
+      "echo 'File copied successfully!'"
+    ]
   tags = {
     Name = "redis-public"
   }
