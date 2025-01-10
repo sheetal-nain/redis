@@ -16,6 +16,7 @@ resource "aws_instance" "redis-public" {
       "chmod 400 /home/ubuntu/ninja.pem",  # Example command to change permissions
       "echo 'File copied successfully!'"
     ]
+  }
   tags = {
     Name = "redis-public"
   }
